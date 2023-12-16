@@ -13,39 +13,47 @@ var connPool = mysql.createPool({
 
 // later you can use connPool.awaitQuery(query, data) -- it will return a promise for the query results.
 
-async function userExists(username) {
+// Gets the user with that username
+// Returns null if one doesn't exist
+async function getUser(username) {
   result = await connPool.awaitQuery(`SELECT * FROM user
                                       WHERE username=?`,
                                       [username])
-  return result.length != 0
+  if (result.length == 0)
+    return null
+  return result[0]
 }
 
-async function postExists(id) {
+// Gets the post with that id
+// Returns null if the post doesn't exist
+async function getPost(id) {
   result = await connPool.awaitQuery(`SELECT * FROM post
                                       WHERE id=?`,
                                       [id])
-  return result.length != 0
+  if (result.length == 0)
+    return null
+  return result[0]
 }
 
 async function newUser(username, hash) {
-  if (await userExists(username))
+  if (await getUser(username))
     return false
 
   // Create user
   result = await connPool.awaitQuery(`INSERT INTO user (username, pw_hash)
                                       VALUES (?, ?)`,
                                       [username, hash])
-  return result.affectedRows == 1
+  return result.affectedRows != 0
 }
 
 async function newPost(username, content) {
-  if (!await userExists(username))
+  if (!await getUser(username))
     return false
 
   result = await connPool.awaitQuery(`INSERT INTO post (username, content)
                                       VALUES (?, ?)`,
                                       [username, content])
-  return result.affectedRows == 1
+  return result.affectedRows != 0
 }
 
 async function userPostsByTime(username) {
@@ -69,14 +77,14 @@ async function userPostsByLiked(username) {
 }
 
 async function editPost(id, content) {
-  if (!await postExists(id))
+  if (!await getPost(id))
     return false
 
   result = await connPool.awaitQuery(`UPDATE post
                                       SET content=?
                                       WHERE id=?`,
                                       [content, id])
-  return result.affectedRows == 1
+  return result.affectedRows != 0
 }
 
 async function deletePost(id) {
@@ -92,46 +100,46 @@ async function deletePost(id) {
   return result.affectedRows != 0
 }
 
-async function likePost(username, id) {
-  if (!await userExists(username))
-    return false
+async function countLikes(id) {
+  result = await connPool.awaitQuery(`SELECT * FROM liked
+                                      WHERE id=?`,
+                                      [id])
+  return result.length
+}
 
-  if (!await postExists(id))
-    return false
-
-  // Check if post is already liked by user
+async function hasLiked(username, id) {
   result = await connPool.awaitQuery(`SELECT * FROM liked
                                       WHERE username=? AND post_id=?`,
                                       [username, id])
-  if (result.length != 0)
-    return false
+  return result.length != 0
+}
 
-  // Like the post
-  result = await connPool.awaitQuery(`INSERT INTO liked
-                                      VALUES (?, ?)`,
-                                      [username, id])
-  return true
+async function likePost(username, id) {
+  if (!await getUser(username))
+    return
+
+  if (!await getPost(id))
+    return
+
+  if (await hasLiked(username, id))
+    return
+
+  await connPool.awaitQuery(`INSERT INTO liked
+                             VALUES (?, ?)`,
+                             [username, id])
 }
 
 async function unlikePost(username, id) {
-  if (!await userExists(username))
-    return false
-
-  if (!await postExists(id))
-    return false
-
-  // Check if post is already liked by user
-  result = await connPool.awaitQuery(`SELECT * FROM liked
-                                      WHERE username=? AND post_id=?`,
-                                      [username, id])
-  if (result.length == 0)
-    return false
-
-  // Like the post
-  result = await connPool.awaitQuery(`DELETE FROM liked
-                                      WHERE username=? AND post_id=?`,
-                                      [username, id])
-  return true
+  await connPool.awaitQuery(`DELETE FROM liked
+                             WHERE username=? AND post_id=?`,
+                             [username, id])
 }
 
-module.exports = {userExists, postExists, newUser, newPost, userPostsByTime, userPostsByLiked, editPost, deletePost, likePost, unlikePost}
+module.exports = {
+  getUser, getPost,
+  newUser, newPost,
+  userPostsByTime, userPostsByLiked,
+  editPost, deletePost,
+  countLikes, hasLiked,
+  likePost, unlikePost
+}

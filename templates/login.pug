@@ -1,0 +1,14 @@
+extend layout
+
+block title
+    title Login | Orblr
+
+block content
+    h1 Login
+    form(action='/login' method='POST')
+        p
+            label(for='username') Username: 
+            input(type='text' name='username' maxlength='20' required)
+        p
+            label(for='password') Password: 
+            input(type='text' name='password' maxlength='20' required)

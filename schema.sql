@@ -1,7 +1,6 @@
 CREATE TABLE user (
     username VARCHAR(20) NOT NULL,
-    pw_hash VARCHAR(60) NOT NULL,
-    -- pw_hash CHAR(60) NOT NULL,
+    pw_hash CHAR(60) NOT NULL,
     PRIMARY KEY(username)
 );
 
@@ -18,5 +17,6 @@ CREATE TABLE liked (
     username VARCHAR(20) NOT NULL,
     post_id INT,
     FOREIGN KEY(username) REFERENCES user(username),
-    FOREIGN KEY(post_id) REFERENCES post(id)
+    FOREIGN KEY(post_id) REFERENCES post(id),
+    PRIMARY KEY (username, post_id)
 );
