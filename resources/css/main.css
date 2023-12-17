@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    background-color: lightblue;
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: darkblue;
+    outline: 2px solid gold;
+}
+div.navright {
+    display: flex;
+}
+div.navitem {
+    padding: 1em;
+}
+
+nav a {
+    color: gold;
+    text-decoration: none;
+    padding: 0.5em;
+    margin: 0.5em;
+    border-radius: 1em;
+    background-color: darkblue;
+    outline: 2px solid gold;
+}
+nav a:hover {
+    filter: brightness(120%);
+}
+
+h1, h2 {
+    width: 100%;
+    text-align: center;
+}
+
+div.post {
+    padding: 1em;
+    margin: 1em auto;
+    border-radius: 1em;
+    width: 30em;
+    background-color: white;
+}
+div.post h2 {
+    margin: 0em;
+    text-align: left;
+}
+div.post h2 a {
+    color: black;
+}
+p.date {
+    color: black;
+    margin: 0.3em 0;
+    font-size: 0.8em;
+}
+div.post p {
+    word-wrap: break-word;
+}
+
+div.buttons {
+    display: flex;
+    justify-content: space-between;
+}
+div.buttons > div {
+    display: flex;
+}
+div.button {
+    width: fit-content;
+    padding: 0.5em;
+    margin: 0 0.5em;
+    border-radius: 1em;
+    background-color: white;
+    outline: 1px solid black;
+}
+div.button:hover {
+    filter: brightness(90%);
+}
+div.liked {
+    background-color: lightgreen;
+}
+
+div.sort {
+    width: fit-content;
+    margin: 1em auto;
+    padding: 0.5em;
+    border-radius: 1em;
+    color: gold;
+    background-color: darkblue;
+}
+
+div.sort a {
+    color: gold;
+}
+
+div.pages {
+    width: fit-content;
+    margin: 1em auto;
+    padding: 0.5em;
+    border-radius: 1em;
+    color: gold;
+    background-color: darkblue;
+}
+
+div.pages a {
+    color: gold;
+}
+
+form {
+    padding: 1em;
+    margin: 1em auto;
+    border-radius: 1em;
+    text-align: center;
+    width: 16em;
+    background-color: white;
+}
+
+form p:first-child {
+    margin: 0em;
+}

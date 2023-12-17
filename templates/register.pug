@@ -1,15 +1,15 @@
 extend layout
 
 block title
-    title Login | Orblr
+    title Register | Orblr
 
 block content
-    h1 Login
-    form(action='/login' method='POST')
+    h1 Register
+    form(action='/register' method='POST')
         p
             label(for='username') Username: 
             input#username(type='text' name='username' maxlength='20' required)
         p
             label(for='password') Password: 
             input#password(type='password' name='password' maxlength='20' required)
-        input(type='submit' value='Login')
+        input(type='submit' value='Register')

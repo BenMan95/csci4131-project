@@ -56,6 +56,22 @@ async function newPost(username, content) {
   return result.affectedRows != 0
 }
 
+async function postsByTime() {
+  return await connPool.awaitQuery(`SELECT post.*, COUNT(liked.post_id) AS likes
+                                    FROM post LEFT JOIN liked
+                                    ON post.id=liked.post_id
+                                    GROUP BY post.id
+                                    ORDER BY time_posted DESC`)
+}
+
+async function postsByLikes() {
+  return await connPool.awaitQuery(`SELECT post.*, COUNT(liked.post_id) AS likes
+                                    FROM post LEFT JOIN liked
+                                    ON post.id=liked.post_id
+                                    GROUP BY post.id
+                                    ORDER BY likes DESC`)
+}
+
 async function userPostsByTime(username) {
   return await connPool.awaitQuery(`SELECT post.*, COUNT(liked.post_id) AS likes
                                     FROM post LEFT JOIN liked
@@ -66,7 +82,7 @@ async function userPostsByTime(username) {
                                     [username])
 }
 
-async function userPostsByLiked(username) {
+async function userPostsByLikes(username) {
   return await connPool.awaitQuery(`SELECT post.*, COUNT(liked.post_id) AS likes
                                     FROM post LEFT JOIN liked
                                     ON post.id=liked.post_id
@@ -138,7 +154,8 @@ async function unlikePost(username, id) {
 module.exports = {
   getUser, getPost,
   newUser, newPost,
-  userPostsByTime, userPostsByLiked,
+  postsByTime, postsByLikes,
+  userPostsByTime, userPostsByLikes,
   editPost, deletePost,
   countLikes, hasLiked,
   likePost, unlikePost

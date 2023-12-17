@@ -4,11 +4,16 @@ html(lang='en')
         meta(charset='UTF-8')
         block title
             title Orblr
-        //- link(rel='stylesheet' href='/css/main.css')
-        //- block script
-        //-     script(src='/js/main.js' defer)
+        link(rel='stylesheet' href='/css/main.css')
+        block script
     body
         nav
-            div: a(href='/') Home
-            div: a(href='/login') Login
+            a(href='/') Home
+            div.navright
+                if username
+                    a(href=`/user/${username}`)= username
+                    a(href='/logout') Logout
+                else
+                    a(href='/register') Register
+                    a(href='/login') Login
         block content

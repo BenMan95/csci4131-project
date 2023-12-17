@@ -1,0 +1,39 @@
+extend layout
+
+block title
+    title #{title} | Orblr
+
+block script
+    if username
+        script(src='/js/user.js' defer)
+    else
+        script(src='/js/guest.js' defer)
+
+block content
+    h1= header
+    if posts.length
+        div.sort
+            if sort == 'likes'
+                a(href='/') Newest
+                |  | Popular
+            else
+                | Newest | 
+                a(href='?sort=likes') Popular
+        each post in posts
+            div.post
+                h2: a(href!='user/'+post.username)= post.username
+                p.date= post.time_posted.toLocaleDateString('en-US', {hour: 'numeric', minute:'numeric'})
+                p= post.content
+                div.button.like(data-id=post.id class=(post.liked && 'liked'))
+                    = post.likes == 1 ? '1 like' : `${post.likes} likes`
+        div.pages
+            if prev
+                a(href!='?'+prev) prev
+                span  | 
+            span Page 
+            span= pagenum
+            if next
+                span  | 
+                a(href!='?'+next) next
+    else
+        h2 There aren't any posts yet

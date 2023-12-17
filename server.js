@@ -8,6 +8,9 @@ const port = 4131
 
 const secret = 'asmoranomardicadaistinaculdacar'
 
+// As of the time of submission, passwords of existing accounts
+// have all been set to 'password'
+
 app.listen(port, () => {
     console.log(`Listening on port ${port}`)
 })
@@ -26,13 +29,77 @@ app.use('/', express.static('resources'))
 // Middleware for session management
 app.use(session({secret}))
 
-app.get('/', (req, res) => res.render('home'))
+// Middleware to unpack username from session tokens
+app.use((req, res, next) => {
+    let token = req.session.token
+    if (token) req.username = jwt.decode(token, secret).username
+    next()
+})
 
-// app.get('/user/:username', (req, res) => {
-//     req.session.username = req.params.username
-//     res.render('home')
-// })
+app.get('/', async (req, res) => {
+    let page = parseInt(req.query.page ?? 1) || 1
+    let params = {
+        title: 'Home',
+        header: 'Orblr',
+        username: req.username,
+        sort: req.query.sort,
+        pagenum: page
+    }
 
+    let posts = await (req.query.sort == 'likes'
+                        ? data.postsByLikes()
+                        : data.postsByTime())
+
+    let start = (page-1)*10
+    let end = Math.min(page*10)
+    params.posts = posts.slice(start, end)
+
+    if (page > 1)
+        params.prev = new URLSearchParams({...req.query, page: page-1})
+    if (end < posts.length)
+        params.next = new URLSearchParams({...req.query, page: page+1})
+
+    for (let post of posts)
+        post.liked = Boolean(req.username) && await data.hasLiked(req.username, post.id)
+
+    res.render('posts', params)
+})
+app.get('/user/:username', async (req, res) => {
+    let page = parseInt(req.query.page ?? 1) || 1
+    let params = {
+        title: req.params.username,
+        header: `${req.params.username}'s page`,
+        username: req.username,
+        sort: req.query.sort,
+        pagenum: page
+    }
+
+    let posts = await (req.query.sort == 'likes'
+                        ? data.userPostsByLikes(req.params.username)
+                        : data.userPostsByTime(req.params.username))
+
+    let start = (page-1)*10
+    let end = Math.min(page*10)
+    params.posts = posts.slice(start, end)
+
+    if (page > 1)
+        params.prev = new URLSearchParams({...req.query, page: page-1})
+    if (end < posts.length)
+        params.next = new URLSearchParams({...req.query, page: page+1})
+
+    for (let post of posts)
+        post.liked = Boolean(req.username) && await data.hasLiked(req.username, post.id)
+
+    if (req.params.username == req.username)
+        res.render('self', params)
+    else
+        res.render('posts', params)
+})
+
+app.get('/register', (req, res) => res.render('register', {username: req.username}))
+app.get('/login', (req, res) => res.render('login', {username: req.username}))
+
+// Endpoints for registration or logging in/out
 app.post('/register', async (req, res) => {
     let username = req.body.username
     let password = req.body.password
@@ -41,28 +108,31 @@ app.post('/register', async (req, res) => {
         return res.render('message', {
             title: 'Registration',
             header: 'Registration Failed',
-            message: 'There was an error with your request'
+            message: 'There was an error with your request',
+            username: req.username
         })
     }
 
     let hash = bcrypt.hashSync(password, 10)
     if (await data.newUser(username, hash)) {
+        req.session.token = jwt.encode({username}, secret)
         res.status(201)
         res.render('message', {
             title: 'Registration',
             header: 'Registration Successful',
-            message: `Successfully registered as ${username}`
+            message: `Successfully registered as ${username}`,
+            username: username
         })
     } else {
         res.status(400)
         res.render('message', {
             title: 'Registration',
             header: 'Registration Failed',
-            message: 'This account already exists'
+            message: 'This account already exists',
+            username: req.username
         })
     }
 })
-
 app.post('/login', async (req, res) => {
     let username = req.body.username
     let password = req.body.password
@@ -71,7 +141,8 @@ app.post('/login', async (req, res) => {
         return res.render('message', {
             title: 'Login',
             header: 'Login Failed',
-            message: 'There was an error with your request'
+            message: 'There was an error with your request',
+            username: req.username
         })
     }
 
@@ -81,7 +152,8 @@ app.post('/login', async (req, res) => {
         return res.render('message', {
             title: 'Login',
             header: 'Login Failed',
-            message: 'User does not exist'
+            message: 'User does not exist',
+            username: req.username
         })
     }
 
@@ -91,55 +163,30 @@ app.post('/login', async (req, res) => {
         res.render('message', {
             title: 'Login',
             header: 'Login Successful',
-            message: `Successfully logged in as ${username}`
+            message: `You've logged in as ${username}`,
+            username: username
         })
     } else {
         res.status(403)
         res.render('message', {
             title: 'Login',
             header: 'Login Failed',
-            message: 'Invalid credentials'
+            message: 'Invalid credentials',
+            username: req.username
         })
     }
 })
-
 app.get('/logout', (req, res) => {
     req.session.destroy(() => {
-        res.render('home')
+        res.render('message', {
+            title: 'Logged out',
+            header: 'Successfully Logged Out',
+            message: 'We hope to see you again'
+        })
     })
 })
 
-// // Handle most GET requests
-// app.get(['/', '/main'], (req, res) => res.render('mainpage'))
-// app.get('/testimonies', (req, res) => res.render('testimonies'))
-// app.get('/contact',     (req, res) => res.render('contactform'))
-
-// app.get('/admin/contactlog', authFunc, async (req, res) => {
-//     let contacts = await data.getContacts()
-//     res.render('contactlog', {contacts})
-// })
-// app.get('/admin/salelog', authFunc, async (req, res) => {
-//     let out = []
-//     let sales = await data.getRecentSales()
-//     for (let sale of sales) {
-//         out.push({
-//             message: sale.sale_text,
-//             active: sale_time_past(sale.time_end) ? 0 : 1
-//         })
-//     }
-//     res.send(out)
-// })
-
-// app.post('/contact', async (req, res) => {
-//     if (paramsValid(req.body)) {
-//         await data.addContact(req.body)
-//         res.status(201)
-//         res.render('formmessage', {message: "Your appointment has been scheduled."})
-//     } else {
-//         res.status(400)
-//         res.render('formmessage', {message: "There was an error with your request."})
-//     }
-// })
+// API endpoints ---------------------------------------------------------------
 
 // Gets a user's token
 app.get('/api/auth', async (req, res) => {
@@ -166,7 +213,7 @@ app.get('/api/auth', async (req, res) => {
     }
 })
 
-// Creates a post
+// Create/edit/delete a post
 app.post('/api/post', async (req, res) => {
     let token = req.body.token ?? req.session.token
     let content = req.body.content
@@ -194,8 +241,6 @@ app.post('/api/post', async (req, res) => {
         res.send({msg: 'An unexpected error occurred'})
     }
 })
-
-// Edits an existing post
 app.put('/api/post', async (req, res) => {
     let token = req.body.token ?? req.session.token
     let id = req.body.id
@@ -230,8 +275,6 @@ app.put('/api/post', async (req, res) => {
         res.send({msg: 'An unexpected error occurred'})
     }
 })
-
-// Deletes an existing post
 app.delete('/api/post', async (req, res) => {
     let token = req.body.token ?? req.session.token
     let id = req.body.id
@@ -261,7 +304,7 @@ app.delete('/api/post', async (req, res) => {
     }
 })
 
-// Checks if a user has liked a post
+// Check if a user has liked a post, or have a user like a post
 app.get('/api/like', async (req, res) => {
     let token = req.body.token ?? req.session.token
     let id = req.body.id
@@ -287,8 +330,6 @@ app.get('/api/like', async (req, res) => {
     res.status(200)
     res.send({liked})
 })
-
-// Sets whether or not a user has liked a post
 app.put('/api/like', async (req, res) => {
     let token = req.body.token ?? req.session.token
     let id = req.body.id
@@ -322,9 +363,13 @@ app.put('/api/like', async (req, res) => {
     }
 })
 
-// Handle 404 errors here
+// Handle 404 errors
 app.use((req, res, next) => {
     res.status(404)
-    res.render('404')
+    res.render('message', {
+        title: '404',
+        header: '404 Error',
+        message: 'The requested resource could not be found'
+    })
     next()
 })
