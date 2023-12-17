@@ -6,9 +6,15 @@ html(lang='en')
             title Orblr
         link(rel='stylesheet' href='/css/main.css')
         block script
+
+        //- From the MTG card Mesmeric Orb
+        //- Artist: David Martin
+        link(rel='icon' href='/img/mesmeric_orb.png')
     body
         nav
-            a(href='/') Home
+            div.navleft
+                a(href='/') Home
+            img(src='/img/mesmeric_orb.png')
             div.navright
                 if username
                     a(href=`/user/${username}`)= username
