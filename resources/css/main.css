@@ -5,7 +5,6 @@ body {
 
 nav {
     display: flex;
-    /* align-items: center; */
     flex-direction: row;
     justify-content: space-between;
     background-color: darkblue;
@@ -99,11 +98,9 @@ div.sort {
     color: gold;
     background-color: darkblue;
 }
-
 div.sort a {
     color: gold;
 }
-
 div.pages {
     width: fit-content;
     margin: 1em auto;
@@ -112,7 +109,6 @@ div.pages {
     color: gold;
     background-color: darkblue;
 }
-
 div.pages a {
     color: gold;
 }

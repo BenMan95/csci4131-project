@@ -29,19 +29,19 @@ app.use('/', express.static('resources'))
 // Middleware for session management
 app.use(session({secret}))
 
-// Middleware to unpack username from session tokens
-app.use((req, res, next) => {
-    let token = req.session.token
-    if (token) req.username = jwt.decode(token, secret).username
-    next()
-})
+// // Middleware to unpack username from session tokens
+// app.use((req, res, next) => {
+//     let token = req.session.token
+//     if (token) req.session.username = jwt.decode(token, secret).username
+//     next()
+// })
 
 app.get('/', async (req, res) => {
     let page = parseInt(req.query.page ?? 1) || 1
     let params = {
         title: 'Home',
         header: 'Orblr',
-        username: req.username,
+        username: req.session.username,
         sort: req.query.sort,
         pagenum: page
     }
@@ -60,7 +60,7 @@ app.get('/', async (req, res) => {
         params.next = new URLSearchParams({...req.query, page: page+1})
 
     for (let post of posts)
-        post.liked = Boolean(req.username) && await data.hasLiked(req.username, post.id)
+        post.liked = Boolean(req.session.username) && await data.hasLiked(req.session.username, post.id)
 
     res.render('posts', params)
 })
@@ -69,7 +69,7 @@ app.get('/user/:username', async (req, res) => {
     let params = {
         title: req.params.username,
         header: `${req.params.username}'s page`,
-        username: req.username,
+        username: req.session.username,
         sort: req.query.sort,
         pagenum: page
     }
@@ -88,16 +88,16 @@ app.get('/user/:username', async (req, res) => {
         params.next = new URLSearchParams({...req.query, page: page+1})
 
     for (let post of posts)
-        post.liked = Boolean(req.username) && await data.hasLiked(req.username, post.id)
+        post.liked = Boolean(req.session.username) && await data.hasLiked(req.session.username, post.id)
 
-    if (req.params.username == req.username)
+    if (req.params.username == req.session.username)
         res.render('self', params)
     else
         res.render('posts', params)
 })
 
-app.get('/register', (req, res) => res.render('register', {username: req.username}))
-app.get('/login', (req, res) => res.render('login', {username: req.username}))
+app.get('/register', (req, res) => res.render('register', {username: req.session.username}))
+app.get('/login', (req, res) => res.render('login', {username: req.session.username}))
 
 // Endpoints for registration or logging in/out
 app.post('/register', async (req, res) => {
@@ -109,7 +109,7 @@ app.post('/register', async (req, res) => {
             title: 'Registration',
             header: 'Registration Failed',
             message: 'There was an error with your request',
-            username: req.username
+            username: req.session.username
         })
     }
 
@@ -129,7 +129,7 @@ app.post('/register', async (req, res) => {
             title: 'Registration',
             header: 'Registration Failed',
             message: 'This account already exists',
-            username: req.username
+            username: req.session.username
         })
     }
 })
@@ -142,7 +142,7 @@ app.post('/login', async (req, res) => {
             title: 'Login',
             header: 'Login Failed',
             message: 'There was an error with your request',
-            username: req.username
+            username: req.session.username
         })
     }
 
@@ -153,12 +153,13 @@ app.post('/login', async (req, res) => {
             title: 'Login',
             header: 'Login Failed',
             message: 'User does not exist',
-            username: req.username
+            username: req.session.username
         })
     }
 
     if (bcrypt.compareSync(password, user.pw_hash)) {
         req.session.token = jwt.encode({username}, secret)
+        req.session.username = username
         res.status(200)
         res.render('message', {
             title: 'Login',
@@ -172,7 +173,7 @@ app.post('/login', async (req, res) => {
             title: 'Login',
             header: 'Login Failed',
             message: 'Invalid credentials',
-            username: req.username
+            username: req.session.username
         })
     }
 })

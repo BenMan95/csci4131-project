@@ -14,18 +14,20 @@ block content
     if posts.length
         div.sort
             if sort == 'likes'
-                a(href='/') Newest
+                a(href='?') Newest
                 |  | Popular
             else
                 | Newest | 
                 a(href='?sort=likes') Popular
         each post in posts
             div.post
-                h2: a(href!='user/'+post.username)= post.username
+                h2: a(href!='/user/'+post.username)= post.username
                 p.date= post.time_posted.toLocaleDateString('en-US', {hour: 'numeric', minute:'numeric'})
                 p= post.content
-                div.button.like(data-id=post.id class=(post.liked && 'liked'))
-                    = post.likes == 1 ? '1 like' : `${post.likes} likes`
+                div.buttons
+                    block buttons
+                        div.button.like(data-id=post.id class=(post.liked && 'liked'))
+                            = post.likes == 1 ? '1 like' : `${post.likes} likes`
         div.pages
             if prev
                 a(href!='?'+prev) prev
