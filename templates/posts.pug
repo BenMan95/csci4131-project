@@ -4,7 +4,7 @@ block title
     title #{title} | Orblr
 
 block script
-    if username
+    if session.username
         script(src='/js/user.js' defer)
     else
         script(src='/js/guest.js' defer)
@@ -19,6 +19,7 @@ block content
             else
                 | Newest | 
                 a(href='?sort=likes') Popular
+    block posts
         each post in posts
             div.post
                 h2: a(href!='/user/'+post.username)= post.username
@@ -26,8 +27,10 @@ block content
                 p= post.content
                 div.buttons
                     block buttons
-                        div.button.like(data-id=post.id class=(post.liked && 'liked'))
-                            = post.likes == 1 ? '1 like' : `${post.likes} likes`
+                        div.left-buttons
+                            div.button.like(data-id=post.id class=(post.liked && 'liked'))
+                                = post.likes == 1 ? '1 like' : `${post.likes} likes`
+    if posts.length
         div.pages
             if prev
                 a(href!='?'+prev) prev

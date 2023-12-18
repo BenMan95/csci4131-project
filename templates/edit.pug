@@ -1,0 +1,17 @@
+extend layout
+
+block title
+    title Edit Post | Orblr
+
+block script
+    script(src='/js/edit.js' defer)
+
+block content
+    h1 Editing Post
+    div.post
+        textarea#content(name='content' placeholder='Input post content'
+                            cols='60' rows='6' maxlength='300' data-id=id)
+            = current
+        div.buttons
+            div.right-buttons
+                div.button#submit(data-redirect='/user/'+session.username) Edit

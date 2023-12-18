@@ -1,6 +1,11 @@
 body {
     margin: 0;
     background-color: lightblue;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+h1 {
+    font-size: 3em;
 }
 
 nav {
@@ -32,7 +37,7 @@ nav a {
     text-decoration: none;
     padding: 0.5em;
     margin: 0.5em;
-    border-radius: 1em;
+    border-radius: 2em;
     background-color: darkblue;
     outline: 2px solid gold;
 }
@@ -73,21 +78,44 @@ div.buttons {
     justify-content: space-between;
 }
 div.buttons > div {
+    flex: 1;
     display: flex;
 }
-div.button {
+div.left-buttons :first-child {
+    margin-left: 0;
+}
+div.right-buttons :last-child {
+    margin-right: 0;
+}
+div.right-buttons {
+    justify-content: flex-end;
+}
+.button {
     width: fit-content;
     padding: 0.5em;
     margin: 0 0.5em;
-    border-radius: 1em;
+    border-radius: 2em;
     background-color: white;
     outline: 1px solid black;
 }
-div.button:hover {
+.button:hover {
     filter: brightness(90%);
+}
+
+a.button {
+    text-decoration: none;
+    color: black;
 }
 div.liked {
     background-color: lightgreen;
+}
+
+textarea {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 1em;
+    resize: none;
 }
 
 div.sort {
@@ -118,10 +146,9 @@ form {
     margin: 1em auto;
     border-radius: 1em;
     text-align: center;
-    width: 16em;
+    width: fit-content;
     background-color: white;
 }
-
 form p:first-child {
     margin: 0em;
 }

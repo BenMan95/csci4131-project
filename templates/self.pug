@@ -1,9 +1,19 @@
 extend posts
 
+append script
+    script(src='/js/post.js' defer)
+
+prepend posts
+    div.post
+        textarea#content(name='content' placeholder='Input post content' rows='6' maxlength='300')
+        div.buttons
+            div.right-buttons
+                div.button#post Post
+
 block buttons
-    div
+    div.left-buttons
         div.button.like(data-id=post.id class=(post.liked && 'liked'))
             = post.likes == 1 ? '1 like' : `${post.likes} likes`
-    div
-        div.button.edit(data-id=post.id) Edit
+    div.right-buttons
+        a.button.edit(data-id=post.id href='/edit/'+post.id) Edit
         div.button.delete(data-id=post.id) Delete

@@ -4,20 +4,20 @@ html(lang='en')
         meta(charset='UTF-8')
         block title
             title Orblr
-        link(rel='stylesheet' href='/css/main.css')
         block script
 
         //- From the MTG card Mesmeric Orb
         //- Artist: David Martin
         link(rel='icon' href='/img/mesmeric_orb.png')
+        link(rel='stylesheet' href='/css/main.css')
     body
         nav
             div.navleft
                 a(href='/') Home
             img(src='/img/mesmeric_orb.png')
             div.navright
-                if username
-                    a(href=`/user/${username}`)= username
+                if session.username
+                    a(href=`/user/${session.username}`)= session.username
                     a(href='/logout') Logout
                 else
                     a(href='/register') Register
