@@ -160,10 +160,10 @@ app.post('/register', async (req, res) => {
     }
 
     // Check if the user already exists
-    let user = data.getUser(username)
+    let user = await data.getUser(username)
     if (user) {
         res.status(400)
-        res.render('message', {
+        return res.render('message', {
             title: 'Registration',
             header: 'Registration Failed',
             message: 'This account already exists'
